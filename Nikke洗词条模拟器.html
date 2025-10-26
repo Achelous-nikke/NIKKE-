@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="NIKKE计算器">
+    <title>NIKKE洗词条模拟器 V1.3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .section {
+                padding: 10px;
+            }
+
+            .section-title {
+                font-size: 18px;
+            }
+
+            .sub-title {
+                font-size: 16px;
+            }
+
+            .citiao-row {
+                flex-wrap: wrap;
+            }
+
+            .citiao-name, .citiao-value {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            .checkbox-label {
+                font-size: 14px;
+                width: 100%;
+                margin-top: 5px;
+            }
+
+            select {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            button {
+                padding: 12px 20px;
+                font-size: 16px;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .info-box {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .info-label {
+                font-size: 14px;
+            }
+
+            .info-value {
+                font-size: 24px;
+            }
+
+            .calc-settings {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .calc-settings select {
+                width: 100%;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+                max-height: 95vh;
+            }
+
+            .modal-citiao, .modal-value {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+
+        .section {
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .sub-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            color: #555;
+        }
+
+        .citiao-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .citiao-name {
+            flex: 2;
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .citiao-value {
+            flex: 1;
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background: white;
+            text-align: center;
+        }
+
+        .citiao-value.blue {
+            color: #00BFFF;
+        }
+
+        .citiao-value.black {
+            background: black;
+            color: #00BFFF;
+        }
+
+        .citiao-value.empty {
+            background: #f5f5f5;
+            color: #999;
+        }
+
+        select {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .citiao-row select:first-of-type {
+            flex: 2;
+        }
+
+        .citiao-row select:last-of-type {
+            flex: 1;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 18px;
+            white-space: nowrap;
+        }
+
+        .checkbox-label input {
+            width: 20px;
+            height: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.3s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #00BFFF;
+            color: white;
+        }
+
+        .btn-dark {
+            background: black;
+            color: #00BFFF;
+        }
+
+        .btn-reset {
+            background: #ddd;
+            color: #333;
+        }
+
+        .btn-orange {
+            background: #FF8C00;
+            color: white;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .info-box {
+            display: inline-block;
+            padding: 15px 25px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            margin: 10px;
+        }
+
+        .info-label {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .result-box {
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            padding: 15px;
+            min-height: 200px;
+            background: white;
+            white-space: pre-wrap;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .modal-citiao {
+            flex: 2;
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal-value {
+            flex: 1;
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .modal-value.blue {
+            color: #00BFFF;
+        }
+
+        .modal-value.black {
+            background: black;
+            color: #00BFFF;
+        }
+
+        .modal-value.empty {
+            background: #f5f5f5;
+            color: #999;
+        }
+
+        .flex-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .calc-settings {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .hotkey-hint {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .btn-highlight {
+            box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 洗词条模拟器 -->
+        <div class="section">
+            <div class="section-title">洗词条模拟器</div>
+
+            <div id="simulatorEntries"></div>
+
+            <div class="button-group">
+                <button class="btn-dark" onclick="simulator.xiShuxing()">效果变更</button>
+                <button class="btn-dark" onclick="simulator.xiValue()">重新设定数值</button>
+            </div>
+
+            <div class="flex-container">
+                <div class="info-box">
+                    <div class="info-label">已用石头数</div>
+                    <div class="info-value" id="stoneCount">0</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-label">洗词条所需石头数</div>
+                    <div class="info-value" id="stoneCost">1</div>
+                </div>
+                <button class="btn-reset" onclick="simulator.reset()">重置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认对话框 -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">效果变更确认</h2>
+            <h3>目前效果</h3>
+            <div id="beforeEntries"></div>
+
+            <h3 style="margin-top: 20px;">变更效果</h3>
+            <div id="afterEntries"></div>
+
+            <div class="hotkey-hint" id="hotkeyHint">
+                快捷键：← 效果维持 | → 效果变更
+            </div>
+
+            <div class="button-group" style="justify-content: center; margin-top: 30px;">
+                <button class="btn-orange" id="cancelBtn" onclick="modal.cancel()">效果维持</button>
+                <button class="btn-primary" id="confirmBtn" onclick="modal.confirm()">效果变更</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 词条类定义
+        const citiaoClasses = [
+            { name: "优越代码伤害增加", rate: 10, minValue: 9.54, maxValue: 29.16 },
+            { name: "命中率增加", rate: 12, minValue: 4.77, maxValue: 14.63 },
+            { name: "最大装弹数增加", rate: 12, minValue: 27.84, maxValue: 85.37 },
+            { name: "攻击力增加", rate: 10, minValue: 4.77, maxValue: 14.63 },
+            { name: "蓄力伤害增加", rate: 12, minValue: 4.77, maxValue: 14.63 },
+            { name: "蓄力速度增加", rate: 12, minValue: 1.98, maxValue: 6.09 },
+            { name: "暴击率增加", rate: 12, minValue: 2.30, maxValue: 7.07 },
+            { name: "暴击伤害增加", rate: 10, minValue: 6.64, maxValue: 20.36 },
+            { name: "防御力增加", rate: 10, minValue: 4.77, maxValue: 14.63 }
+        ];
+
+        // 获取词条数值
+        function getCitiaoValue(citiaoClass, danwei) {
+            if (!citiaoClass || danwei === 0) return 0;
+            return citiaoClass.minValue + (danwei - 1) * (citiaoClass.maxValue - citiaoClass.minValue) / 14;
+        }
+
+        // 获取颜色等级
+        function getCitiaoColor(danwei) {
+            if (danwei === 15) return 'black';
+            if (danwei > 10) return 'blue';
+            return 'normal';
+        }
+
+        // 获取随机档位
+        function getRandomDanwei() {
+            const rand = Math.random() * 100;
+            if (rand < 12) return 1;
+            if (rand < 24) return 2;
+            if (rand < 36) return 3;
+            if (rand < 48) return 4;
+            if (rand < 60) return 5;
+            if (rand < 67) return 6;
+            if (rand < 74) return 7;
+            if (rand < 81) return 8;
+            if (rand < 88) return 9;
+            if (rand < 95) return 10;
+            if (rand < 96) return 11;
+            if (rand < 97) return 12;
+            if (rand < 98) return 13;
+            if (rand < 99) return 14;
+            return 15;
+        }
+
+        // 获取随机词条
+        function getRandomCitiao(excludeClasses = [], emptyRate = 0) {
+            // 判断是否为空词条
+            if (emptyRate > 0 && Math.random() * (emptyRate + 1) >= 1) {
+                return null;
+            }
+
+            // 过滤已存在的词条
+            const available = citiaoClasses.filter(c => !excludeClasses.includes(c));
+            if (available.length === 0) return null;
+
+            // 计算总权重
+            const totalRate = available.reduce((sum, c) => sum + c.rate, 0);
+
+            // 随机选择
+            let rand = Math.random() * totalRate;
+            for (let citiao of available) {
+                rand -= citiao.rate;
+                if (rand <= 0) return citiao;
+            }
+
+            return available[available.length - 1];
+        }
+
+        // 模拟器
+        const simulator = {
+            citiaos: [
+                { citiaoClass: null, danwei: 0, isLock: false, emptyCount: 0 },
+                { citiaoClass: null, danwei: 0, isLock: false, emptyCount: 1 },
+                { citiaoClass: null, danwei: 0, isLock: false, emptyCount: 2 }
+            ],
+            isFirstTime: true,
+            pendingChanges: null,
+
+            init() {
+                const container = document.getElementById('simulatorEntries');
+                container.innerHTML = '';
+
+                for (let i = 0; i < 3; i++) {
+                    const row = document.createElement('div');
+                    row.className = 'citiao-row';
+                    row.innerHTML = `
+                        <div class="citiao-name" id="sim-name-${i}"></div>
+                        <div class="citiao-value" id="sim-value-${i}"></div>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="sim-lock-${i}" onchange="simulator.toggleLock(${i})">
+                            锁定
+                        </label>
+                    `;
+                    container.appendChild(row);
+                }
+
+                this.updateUI();
+            },
+
+            updateUI() {
+                for (let i = 0; i < 3; i++) {
+                    const citiao = this.citiaos[i];
+                    const nameEl = document.getElementById(`sim-name-${i}`);
+                    const valueEl = document.getElementById(`sim-value-${i}`);
+                    const lockEl = document.getElementById(`sim-lock-${i}`);
+
+                    if (citiao.citiaoClass) {
+                        nameEl.textContent = `[${citiao.citiaoClass.name}](${citiao.citiaoClass.minValue.toFixed(2)}%-${citiao.citiaoClass.maxValue.toFixed(2)}%)`;
+                        const value = getCitiaoValue(citiao.citiaoClass, citiao.danwei);
+                        valueEl.textContent = `${value.toFixed(2)}%[${citiao.danwei}档]`;
+
+                        const color = getCitiaoColor(citiao.danwei);
+                        valueEl.className = 'citiao-value ' + color;
+                        lockEl.disabled = false;
+                    } else {
+                        nameEl.textContent = '暂无效果';
+                        valueEl.textContent = '暂无效果';
+                        valueEl.className = 'citiao-value empty';
+                        lockEl.checked = false;
+                        lockEl.disabled = true;
+                    }
+
+                    lockEl.checked = citiao.isLock;
+                }
+
+                document.getElementById('stoneCost').textContent = this.getStoneCost();
+            },
+
+            getStoneCost() {
+                const lockCount = this.citiaos.filter(c => c.isLock).length;
+                if (lockCount === 1) return 2;
+                if (lockCount === 2) return 3;
+                return 1;
+            },
+
+            toggleLock(index) {
+                const checkbox = document.getElementById(`sim-lock-${index}`);
+                const citiao = this.citiaos[index];
+
+                if (!citiao.citiaoClass && checkbox.checked) {
+                    alert('无法锁定空词条');
+                    checkbox.checked = false;
+                    return;
+                }
+
+                const lockCount = this.citiaos.filter(c => c.isLock).length;
+                if (lockCount >= 2 && checkbox.checked && !citiao.isLock) {
+                    alert('当前已锁定两个词条，无法再锁定');
+                    checkbox.checked = false;
+                    return;
+                }
+
+                if (!citiao.isLock && checkbox.checked) {
+                    const cost = lockCount === 0 ? 2 : 3;
+                    if (confirm(`是否要锁定词条，需要石头${cost}个`)) {
+                        citiao.isLock = true;
+                        const currentStone = parseInt(document.getElementById('stoneCount').textContent);
+                        document.getElementById('stoneCount').textContent = currentStone + cost;
+                    } else {
+                        checkbox.checked = false;
+                        return;
+                    }
+                }
+
+                if (citiao.isLock && !checkbox.checked) {
+                    if (confirm('是否要解锁词条')) {
+                        citiao.isLock = false;
+                    } else {
+                        checkbox.checked = true;
+                        return;
+                    }
+                }
+
+                this.updateUI();
+            },
+
+            getCiTiao(isXiValue = false) {
+                const result = [];
+                const existingClasses = this.citiaos
+                    .filter(c => c.isLock)
+                    .map(c => c.citiaoClass);
+
+                for (let i = 0; i < 3; i++) {
+                    if (this.citiaos[i].isLock) {
+                        result.push({
+                            citiaoClass: this.citiaos[i].citiaoClass,
+                            danwei: this.citiaos[i].danwei
+                        });
+                    } else {
+                        let citiaoClass;
+                        if (isXiValue) {
+                            citiaoClass = this.citiaos[i].citiaoClass;
+                        } else {
+                            citiaoClass = getRandomCitiao(existingClasses, this.citiaos[i].emptyCount);
+                            if (citiaoClass) existingClasses.push(citiaoClass);
+                        }
+
+                        // 第一次洗词条时，档位固定为11档，否则随机
+                        const danwei = citiaoClass ? (this.isFirstTime ? 11 : getRandomDanwei()) : 0;
+                        result.push({ citiaoClass, danwei });
+                    }
+                }
+
+                // 如果全是空词条，重新生成
+                if (result.every(r => !r.citiaoClass)) {
+                    return this.getCiTiao(isXiValue);
+                }
+
+                return result;
+            },
+
+            xiShuxing() {
+                this.pendingChanges = this.getCiTiao(false);
+                // 洗词条时就扣除石头
+                this.consumeStone();
+                modal.show(this.citiaos, this.pendingChanges);
+            },
+
+            xiValue() {
+                if (this.citiaos.every(c => !c.citiaoClass)) {
+                    alert('无词条不能洗数值');
+                    return;
+                }
+
+                this.pendingChanges = this.getCiTiao(true);
+                // 洗词条时就扣除石头
+                this.consumeStone();
+                modal.show(this.citiaos, this.pendingChanges);
+            },
+
+            consumeStone() {
+                // 扣除石头
+                const currentStone = parseInt(document.getElementById('stoneCount').textContent);
+                document.getElementById('stoneCount').textContent = currentStone + this.getStoneCost();
+            },
+
+            applyChanges() {
+                // 应用新词条（石头已经在洗词条时扣除）
+                for (let i = 0; i < 3; i++) {
+                    this.citiaos[i].citiaoClass = this.pendingChanges[i].citiaoClass;
+                    this.citiaos[i].danwei = this.pendingChanges[i].danwei;
+                }
+                
+                // 第一次洗完后标记为false
+                if (this.isFirstTime) {
+                    this.isFirstTime = false;
+                }
+
+                this.updateUI();
+            },
+
+            reset() {
+                if (confirm('确定要重置吗？当前词条和已用石头数将全部清空！')) {
+                    this.citiaos = [
+                        { citiaoClass: null, danwei: 0, isLock: false, emptyCount: 0 },
+                        { citiaoClass: null, danwei: 0, isLock: false, emptyCount: 1 },
+                        { citiaoClass: null, danwei: 0, isLock: false, emptyCount: 2 }
+                    ];
+                    this.isFirstTime = true;
+                    document.getElementById('stoneCount').textContent = '0';
+                    this.updateUI();
+                }
+            }
+        };
+
+        // 模态框
+        const modal = {
+            beforeData: null,
+            afterData: null,
+            keyboardHandler: null,
+
+            show(before, after) {
+                this.beforeData = before;
+                this.afterData = after;
+
+                const beforeContainer = document.getElementById('beforeEntries');
+                const afterContainer = document.getElementById('afterEntries');
+                const cancelBtn = document.getElementById('cancelBtn');
+                const confirmBtn = document.getElementById('confirmBtn');
+                const modalTitle = document.getElementById('modalTitle');
+                const hotkeyHint = document.getElementById('hotkeyHint');
+
+                beforeContainer.innerHTML = '';
+                afterContainer.innerHTML = '';
+
+                // 设置模态框标题和按钮
+                if (simulator.isFirstTime) {
+                    modalTitle.textContent = 'T10装备升级确认';
+                    cancelBtn.style.display = 'none';
+                    confirmBtn.textContent = '确认升级';
+                    hotkeyHint.style.display = 'none';
+                } else {
+                    modalTitle.textContent = '效果变更确认';
+                    cancelBtn.style.display = 'block';
+                    confirmBtn.textContent = '效果变更';
+                    hotkeyHint.style.display = 'block';
+                }
+
+                for (let i = 0; i < 3; i++) {
+                    // 之前的词条
+                    const beforeRow = document.createElement('div');
+                    beforeRow.className = 'modal-row';
+
+                    const beforeCitiao = before[i];
+                    const beforeName = beforeCitiao.citiaoClass
+                        ? `[${beforeCitiao.citiaoClass.name}](${beforeCitiao.citiaoClass.minValue.toFixed(2)}%-${beforeCitiao.citiaoClass.maxValue.toFixed(2)}%)`
+                        : '暂无效果';
+                    const beforeValue = beforeCitiao.citiaoClass
+                        ? `${getCitiaoValue(beforeCitiao.citiaoClass, beforeCitiao.danwei).toFixed(2)}%[${beforeCitiao.danwei}档]`
+                        : '暂无效果';
+                    const beforeColor = beforeCitiao.citiaoClass ? getCitiaoColor(beforeCitiao.danwei) : 'empty';
+
+                    beforeRow.innerHTML = `
+                        <div class="modal-citiao">${beforeName}</div>
+                        <div class="modal-value ${beforeColor}">${beforeValue}</div>
+                    `;
+                    beforeContainer.appendChild(beforeRow);
+
+                    // 之后的词条
+                    const afterRow = document.createElement('div');
+                    afterRow.className = 'modal-row';
+
+                    const afterCitiao = after[i];
+                    const afterName = afterCitiao.citiaoClass
+                        ? `[${afterCitiao.citiaoClass.name}](${afterCitiao.citiaoClass.minValue.toFixed(2)}%-${afterCitiao.citiaoClass.maxValue.toFixed(2)}%)`
+                        : '暂无效果';
+                    const afterValue = afterCitiao.citiaoClass
+                        ? `${getCitiaoValue(afterCitiao.citiaoClass, afterCitiao.danwei).toFixed(2)}%[${afterCitiao.danwei}档]`
+                        : '暂无效果';
+                    const afterColor = afterCitiao.citiaoClass ? getCitiaoColor(afterCitiao.danwei) : 'empty';
+
+                    afterRow.innerHTML = `
+                        <div class="modal-citiao">${afterName}</div>
+                        <div class="modal-value ${afterColor}">${afterValue}</div>
+                    `;
+                    afterContainer.appendChild(afterRow);
+                }
+
+                // 只在非首次洗词条时添加键盘事件
+                if (!simulator.isFirstTime) {
+                    this.keyboardHandler = this.handleKeyboard.bind(this);
+                    document.addEventListener('keydown', this.keyboardHandler);
+                }
+                
+                // 防止回车键刷新词条
+                document.addEventListener('keydown', this.preventEnterRefresh);
+                
+                document.getElementById('confirmModal').classList.add('show');
+            },
+
+            handleKeyboard(e) {
+                // 只处理左右箭头键
+                if (e.key === 'ArrowLeft') {
+                    // 左箭头选择效果维持
+                    this.cancel();
+                } else if (e.key === 'ArrowRight') {
+                    // 右箭头选择效果变更
+                    this.confirm();
+                }
+            },
+            
+            preventEnterRefresh(e) {
+                // 阻止回车键刷新词条
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    return false;
+                }
+            },
+
+            confirm() {
+                simulator.applyChanges();
+                this.hide();
+            },
+
+            cancel() {
+                this.hide();
+            },
+
+            hide() {
+                document.getElementById('confirmModal').classList.remove('show');
+                // 移除键盘事件监听
+                if (this.keyboardHandler) {
+                    document.removeEventListener('keydown', this.keyboardHandler);
+                    this.keyboardHandler = null;
+                }
+                // 移除回车键阻止监听
+                document.removeEventListener('keydown', this.preventEnterRefresh);
+            }
+        };
+
+        // 页面加载时初始化
+        window.onload = () => {
+            simulator.init();
+        };
+    </script>
+</body>
+</html>
